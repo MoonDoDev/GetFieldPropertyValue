@@ -5,7 +5,7 @@ Este es un proyecto demo construido en Visual Studio 2022, y en C# de .NET 8, co
 Para obtener los valores de los campos/propiedades, es necesario suministrar sus nombres, los cuales estamos almacenando en un array de tipo string `string[]`, e igualmente en una lista de strings `List<string>`.
 Estamos utilizando dos tipos diferentes para almacenar los nombres de los campos/propiedades para darle un valor adicional a este demo, y es mostrar el **Benchmark** en el uso de una sentencia `for` con un arreglo, y una sentencia `foreach` con una colección `IEnumerable`.
 
-En el presente proyecto tenemos una clase llamada `RecordData`, la cual tiene varios campos y algunas propiedades, y para obtener sus nombres, hemos creado dos métodos, los cuales son: 
+En el presente proyecto tenemos una clase llamada `RecordData`, la cual tiene varios campos y algunas propiedades, y para obtener sus valores, hemos creado dos métodos, los cuales son: 
 
 ```
 internal T GetFieldValue<T>( string fieldName ) 
@@ -14,7 +14,7 @@ internal T GetPropertyValue<T>( string propertyName )
 
 La primera, como su nombre lo supone, es para obtener los valores de los campos, y la segunda para obtener los valores de las propiedades de la clase.
 
-Adicionalmente encontraremos la clase llamada `BenchmarkClass`, con la cual estamos evaluando el rendimiento al momento de obtener los valores de los campos/propiedades de la clase, usando `for` y `foreach`. El resultado de dicha evaluación se muestra a continuación (saca sus propias conclusiones):
+Adicionalmente encontraremos la clase llamada `BenchmarkClass`, con la cual estamos evaluando el rendimiento al momento de obtener los valores de los campos/propiedades de la clase, usando `for` y `foreach`. El resultado de dicha evaluación se muestra a continuación (saca tus propias conclusiones):
 
 ```
 |---------------------------------------------------------|
