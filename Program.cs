@@ -6,31 +6,49 @@ namespace GetFieldPropertyValue;
 /// <summary>
 /// 
 /// </summary>
-internal record RecordData
+public record RecordData
 {
-	/// <summary>
-	/// Class field and property names
-	/// </summary>
-	public readonly string[] ClassFields = [ "Field_01", "Field_02", "Field_03", "Field_04", "Field_05" ];
-	public readonly string[] ClassProperties = [ "Property_01", "Property_02" ];
-
-	public readonly List<string> FieldList = [ "Field_01", "Field_02", "Field_03", "Field_04", "Field_05" ];
-	public readonly List<string> PropertyList = [ "Property_01", "Property_02" ];
-
 	/// <summary>
 	/// Class fields
 	/// </summary>
-	public string? Field_01;
-	public string? Field_02;
-	public string? Field_03;
-	public string? Field_04;
-	public string? Field_05;
+	public string? StringField;
+	public int IntField;
+	public decimal DecimalField;
+	public float FloatField;
+	public bool BoolField;
+
+	/// <summary>
+	/// Class field names
+	/// </summary>
+	public readonly Dictionary<string, Type> FieldNameTypes = new()
+	{
+		[ "StringField" ] = typeof( string ),
+		[ "IntField" ] = typeof( int ),
+		[ "DecimalField" ] = typeof( decimal ),
+		[ "FloatField" ] = typeof( float ),
+		[ "BoolField" ] = typeof( bool )
+	};
 
 	/// <summary>
 	/// Class properties
 	/// </summary>
-	public string? Property_01 { get; set; }
-	public string? Property_02 { get; set; }
+	public string? StringProperty { get; set; }
+	public int IntProperty { get; set; }
+	public decimal DecimalProperty { get; set; }
+	public float FloatProperty { get; set; }
+	public bool BoolProperty { get; set; }
+
+	/// <summary>
+	/// Class property names
+	/// </summary>
+	public readonly Dictionary<string, Type> PropertyNameTypes = new()
+	{
+		[ "StringProperty" ] = typeof( string ),
+		[ "IntProperty" ] = typeof( int ),
+		[ "DecimalProperty" ] = typeof( decimal ),
+		[ "FloatProperty" ] = typeof( float ),
+		[ "BoolProperty" ] = typeof( bool )
+	};
 
 	/// <summary>
 	/// Method to get fields value
@@ -38,7 +56,7 @@ internal record RecordData
 	/// <typeparam name="T"></typeparam>
 	/// <param name="fieldName"></param>
 	/// <returns></returns>
-	internal T GetFieldValue<T>( string fieldName )
+	public T GetFieldValue<T>( string fieldName )
 	{
 		return ( T ) typeof( RecordData ).GetField( fieldName )!.GetValue( this )!;
 	}
@@ -49,27 +67,31 @@ internal record RecordData
 	/// <typeparam name="T"></typeparam>
 	/// <param name="propertyName"></param>
 	/// <returns></returns>
-	internal T GetPropertyValue<T>( string propertyName )
+	public T GetPropertyValue<T>( string propertyName )
 	{
 		return ( T ) typeof( RecordData ).GetProperty( propertyName )!.GetValue( this )!;
 	}
 }
 
 /// <summary>
-/// |---------------------------------------------------------|
-/// | Method                 | Mean     | Error    | StdDev   |
-/// |----------------------- |---------:|---------:|---------:|
-/// | GetFieldsByFor         | 778.3 ns | 14.65 ns | 14.39 ns |
-/// | GetPropertiesByFor     | 259.2 ns |  5.30 ns |  7.26 ns |
-/// | GetFieldsByForeach     | 798.3 ns | 28.84 ns | 85.03 ns |
-/// | GetPropertiesByForeach | 278.5 ns | 12.58 ns | 36.69 ns |
-/// |---------------------------------------------------------|
-/// | * Legends *                                             |
-/// | Mean   : Arithmetic mean of all measurements            |
-/// | Error  : Half of 99.9% confidence interval              |
-/// | StdDev : Standard deviation of all measurements         |
-/// | 1 ns   : 1 Nanosecond(0.000000001 sec)                  |
-/// |---------------------------------------------------------|
+/// |----------------------------------------------------------------------------------------:|
+/// | Method                                    | Mean     | Error     | StdDev    | Median   |
+/// |------------------------------------------ |---------:|----------:|----------:|---------:|
+/// | GetFieldsByOnlyReflection                 | 1.901 us | 0.0279 us | 0.0248 us | 1.905 us |
+/// | GetPropsByOnlyReflection                  | 1.172 us | 0.0071 us | 0.0059 us | 1.172 us |
+/// |------------------------------------------ |---------:|----------:|----------:|---------:|
+/// | GetFieldsByGenericAndReflection           | 6.557 us | 0.2278 us | 0.6645 us | 6.545 us |
+/// | GetPropsByGenericAndReflection            | 4.619 us | 0.2444 us | 0.7205 us | 4.536 us |
+/// | GetFieldsByGenericReflectionAndDictionary | 4.711 us | 0.2533 us | 0.7429 us | 4.634 us |
+/// | GetPropsByGenericReflectionAndDictionary  | 4.263 us | 0.2375 us | 0.6891 us | 4.045 us |
+/// |------------------------------------------ |---------:|----------:|----------:|---------:|
+/// | * Legends *                                                                             |
+/// | Mean   : Arithmetic mean of all measurements                                            |
+/// | Error  : Half of 99.9% confidence interval                                              |
+/// | StdDev : Standard deviation of all measurements                                         |
+/// | Median : Value separating the higher half of all measurements(50th percentile )         |
+/// | 1 us   : 1 Microsecond(0.000001 sec)                                                    |
+/// |----------------------------------------------------------------------------------------:|
 /// </summary>
 public class BenchmarkClass
 {
@@ -82,13 +104,16 @@ public class BenchmarkClass
 	{
 		_record = new()
 		{
-			Field_01 = "f-one",
-			Field_02 = "f-two",
-			Field_03 = "f-three",
-			Field_04 = "f-four",
-			Field_05 = "f-five",
-			Property_01 = "p-one",
-			Property_02 = "p-two"
+			StringField = "Hello",
+			IntField = 247,
+			DecimalField = 120.34m,
+			FloatField = 3.014f,
+			BoolField = true,
+			StringProperty = "World",
+			IntProperty = 742,
+			DecimalProperty = 430.21m,
+			FloatProperty = 4.103f,
+			BoolProperty = false
 		};
 	}
 
@@ -97,14 +122,15 @@ public class BenchmarkClass
 	/// </summary>
 	/// <returns></returns>
 	[Benchmark]
-	public string GetFieldsByFor()
+	public string GetFieldsByOnlyReflection()
 	{
+		var fields = typeof( RecordData ).GetFields();
 		string result = string.Empty;
 
-		for ( int i = 0; i < _record.ClassFields.Length; i++ )
+		foreach ( var field in fields )
 		{
-			result = string.Concat( result, _record.ClassFields[ i ], " = ",
-				_record.GetFieldValue<string>( _record.ClassFields[ i ] ), ", " );
+			var fldValue = typeof( RecordData ).GetField( field.Name )!.GetValue( _record )!;
+			result = string.Concat( result, field.Name, " = ", fldValue, ", " );
 		}
 
 		return result;
@@ -115,14 +141,15 @@ public class BenchmarkClass
 	/// </summary>
 	/// <returns></returns>
 	[Benchmark]
-	public string GetPropertiesByFor()
+	public string GetPropsByOnlyReflection()
 	{
+		var properties = typeof( RecordData ).GetProperties();
 		string result = string.Empty;
 
-		for ( int i = 0; i < _record.ClassProperties.Length; i++ )
+		foreach ( var property in properties )
 		{
-			result = string.Concat( result, _record.ClassProperties[ i ], " = ",
-				_record.GetPropertyValue<string>( _record.ClassProperties[ i ] ), ", " );
+			var propValue = typeof( RecordData ).GetProperty( property.Name )!.GetValue( _record )!;
+			result = string.Concat( result, property.Name, " = ", propValue, ", " );
 		}
 
 		return result;
@@ -133,14 +160,20 @@ public class BenchmarkClass
 	/// </summary>
 	/// <returns></returns>
 	[Benchmark]
-	public string GetFieldsByForeach()
+	public string GetFieldsByGenericAndReflection()
 	{
 		string result = string.Empty;
 
-		foreach ( var field in _record.FieldList )
+		var fields = typeof( RecordData ).GetFields();
+
+		foreach ( var field in fields )
 		{
-			result = string.Concat( result, field, " = ",
-				_record.GetFieldValue<string>( field ), ", " );
+			var fieldValue = typeof( RecordData )
+				.GetMethod( "GetFieldValue" )!
+				.MakeGenericMethod( field.FieldType )
+				.Invoke( _record, [ field.Name ] );
+
+			result = string.Concat( result, field.Name, " = ", fieldValue, ", " );
 		}
 
 		return result;
@@ -151,14 +184,64 @@ public class BenchmarkClass
 	/// </summary>
 	/// <returns></returns>
 	[Benchmark]
-	public string GetPropertiesByForeach()
+	public string GetPropsByGenericAndReflection()
 	{
 		string result = string.Empty;
 
-		foreach ( var property in _record.PropertyList )
+		var properties = typeof( RecordData ).GetProperties();
+
+		foreach ( var property in properties )
 		{
-			result = string.Concat( result, property, " = ",
-				_record.GetPropertyValue<string>( property ), ", " );
+			var propertyValue = typeof( RecordData )
+				.GetMethod( "GetPropertyValue" )!
+				.MakeGenericMethod( property.PropertyType )
+				.Invoke( _record, [ property.Name ] );
+
+			result = string.Concat( result, property.Name, " = ", propertyValue, ", " );
+		}
+
+		return result;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	[Benchmark]
+	public string GetFieldsByGenericReflectionAndDictionary()
+	{
+		string result = string.Empty;
+
+		foreach ( var field in _record.FieldNameTypes )
+		{
+			var fieldValue = typeof( RecordData )
+				.GetMethod( "GetFieldValue" )!
+				.MakeGenericMethod( field.Value )
+				.Invoke( _record, [ field.Key ] );
+
+			result = string.Concat( result, field.Key, " = ", fieldValue, ", " );
+		}
+
+		return result;
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	[Benchmark]
+	public string GetPropsByGenericReflectionAndDictionary()
+	{
+		string result = string.Empty;
+
+		foreach ( var property in _record.PropertyNameTypes )
+		{
+			var propertyValue = typeof( RecordData )
+				.GetMethod( "GetPropertyValue" )!
+				.MakeGenericMethod( property.Value )
+				.Invoke( _record, [ property.Key ] );
+
+			result = string.Concat( result, property.Key, " = ", propertyValue, ", " );
 		}
 
 		return result;
@@ -173,53 +256,58 @@ public static class Program
 	/// <summary>
 	/// 
 	/// </summary>
-	public static void Main()
+	public static void Main( string[] args )
 	{
 		// Run Class Benchmark
-		BenchmarkRunner.Run<BenchmarkClass>();
-
-		// Run process with console output
-		var record = new RecordData
+		if ( ( args.Length > 0 ) && args[ 0 ].Equals( "/benchmark",
+			StringComparison.InvariantCultureIgnoreCase ) )
 		{
-			Field_01 = "f-one",
-			Field_02 = "f-two",
-			Field_03 = "f-three",
-			Field_04 = "f-four",
-			Field_05 = "f-five",
-			Property_01 = "p-one",
-			Property_02 = "p-two"
-		};
-
-		Console.Clear();
-		Console.WriteLine( "Class fields ( string array ):" );
-
-		for ( int i = 0; i < record.ClassFields.Length; i++ )
-		{
-			Console.WriteLine( $"Value for field_{( i + 1 )} => {record.GetFieldValue<string>( record.ClassFields[ i ] )}" );
+			BenchmarkRunner.Run<BenchmarkClass>();
 		}
-
-		Console.WriteLine();
-		Console.WriteLine( "Class properties ( string array ):" );
-
-		for ( int i = 0; i < record.ClassProperties.Length; i++ )
+		else
 		{
-			Console.WriteLine( $"Value for property_{( i + 1 )} => {record.GetPropertyValue<string>( record.ClassProperties[ i ] )}" );
-		}
+			// Run process with console output
+			var record = new RecordData
+			{
+				StringField = "Hello",
+				IntField = 247,
+				DecimalField = 120.34m,
+				FloatField = 3.014f,
+				BoolField = true,
+				StringProperty = "World",
+				IntProperty = 742,
+				DecimalProperty = 430.21m,
+				FloatProperty = 4.103f,
+				BoolProperty = false
+			};
 
-		Console.WriteLine();
-		Console.WriteLine( "Class fields ( string list ):" );
+			Console.Clear();
+			Console.WriteLine( "Class fields:" );
 
-		foreach ( var field in record.FieldList )
-		{
-			Console.WriteLine( $"Value for {field} => {record.GetFieldValue<string>( field )}" );
-		}
+			var fields = typeof( RecordData ).GetFields();
 
-		Console.WriteLine();
-		Console.WriteLine( "Class properties ( string list ):" );
+			foreach ( var field in fields )
+			{
+				var fieldValue = typeof( RecordData )
+					.GetField( field.Name )!
+					.GetValue( record )!;
 
-		foreach ( var property in record.PropertyList )
-		{
-			Console.WriteLine( $"Value for {property} => {record.GetPropertyValue<string>( property )}" );
+				Console.WriteLine( $"Value of '{field.Name}' =>  {fieldValue}" );
+			}
+
+			Console.WriteLine();
+			Console.WriteLine( "Class properties:" );
+
+			var properties = typeof( RecordData ).GetProperties();
+
+			foreach ( var property in properties )
+			{
+				var propertyValue = typeof( RecordData )
+					.GetProperty( property.Name )!
+					.GetValue( record )!;
+				
+				Console.WriteLine( $"Value of '{property.Name}' => {propertyValue}" );
+			}
 		}
 	}
 }
