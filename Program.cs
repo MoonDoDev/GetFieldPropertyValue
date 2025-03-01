@@ -77,19 +77,19 @@ public record RecordData
 /// |----------------------------------------------------------------------------------------:|
 /// | Method                                    | Mean     | Error     | StdDev    | Median   |
 /// |------------------------------------------ |---------:|----------:|----------:|---------:|
-/// | GetFieldsByOnlyReflection                 | 1.901 us | 0.0279 us | 0.0248 us | 1.905 us |
-/// | GetPropsByOnlyReflection                  | 1.172 us | 0.0071 us | 0.0059 us | 1.172 us |
+/// | GetFieldsByOnlyReflection                 | 1.442 us | 0.0182 us | 0.0170 us | 1.444 us |
+/// | GetPropsByOnlyReflection                  | 1.175 us | 0.0156 us | 0.0138 us | 1.173 us |
 /// |------------------------------------------ |---------:|----------:|----------:|---------:|
-/// | GetFieldsByGenericAndReflection           | 6.557 us | 0.2278 us | 0.6645 us | 6.545 us |
-/// | GetPropsByGenericAndReflection            | 4.619 us | 0.2444 us | 0.7205 us | 4.536 us |
-/// | GetFieldsByGenericReflectionAndDictionary | 4.711 us | 0.2533 us | 0.7429 us | 4.634 us |
-/// | GetPropsByGenericReflectionAndDictionary  | 4.263 us | 0.2375 us | 0.6891 us | 4.045 us |
+/// | GetFieldsByGenericAndReflection           | 4.366 us | 0.0561 us | 0.0525 us | 4.371 us |
+/// | GetPropsByGenericAndReflection            | 4.701 us | 0.2165 us | 0.6314 us | 4.537 us |
+/// | GetFieldsByGenericReflectionAndDictionary | 4.587 us | 0.2291 us | 0.6684 us | 4.319 us |
+/// | GetPropsByGenericReflectionAndDictionary  | 4.206 us | 0.1623 us | 0.4579 us | 4.187 us |
 /// |------------------------------------------ |---------:|----------:|----------:|---------:|
 /// | * Legends *                                                                             |
 /// | Mean   : Arithmetic mean of all measurements                                            |
 /// | Error  : Half of 99.9% confidence interval                                              |
 /// | StdDev : Standard deviation of all measurements                                         |
-/// | Median : Value separating the higher half of all measurements(50th percentile )         |
+/// | Median : Value separating the higher half of all measurements(50th percentile)          |
 /// | 1 us   : 1 Microsecond(0.000001 sec)                                                    |
 /// |----------------------------------------------------------------------------------------:|
 /// </summary>
@@ -129,8 +129,15 @@ public class BenchmarkClass
 
 		foreach ( var field in fields )
 		{
-			var fldValue = typeof( RecordData ).GetField( field.Name )!.GetValue( _record )!;
-			result = string.Concat( result, field.Name, " = ", fldValue, ", " );
+			// Descartamos los 2 campos adicionales, definidos por "Reflection"
+			if ( !field.IsInitOnly )
+			{
+				var fldValue = typeof( RecordData )
+					.GetField( field.Name )!
+					.GetValue( _record )!;
+				
+				result = string.Concat( result, field.Name, " = ", fldValue, ", " );
+			}
 		}
 
 		return result;
@@ -148,7 +155,10 @@ public class BenchmarkClass
 
 		foreach ( var property in properties )
 		{
-			var propValue = typeof( RecordData ).GetProperty( property.Name )!.GetValue( _record )!;
+			var propValue = typeof( RecordData )
+				.GetProperty( property.Name )!
+				.GetValue( _record )!;
+			
 			result = string.Concat( result, property.Name, " = ", propValue, ", " );
 		}
 
@@ -168,12 +178,16 @@ public class BenchmarkClass
 
 		foreach ( var field in fields )
 		{
-			var fieldValue = typeof( RecordData )
-				.GetMethod( "GetFieldValue" )!
-				.MakeGenericMethod( field.FieldType )
-				.Invoke( _record, [ field.Name ] );
+			// Descartamos los 2 campos adicionales, definidos por "Reflection"
+			if ( !field.IsInitOnly )
+			{
+				var fieldValue = typeof( RecordData )
+					.GetMethod( "GetFieldValue" )!
+					.MakeGenericMethod( field.FieldType )
+					.Invoke( _record, [ field.Name ] );
 
-			result = string.Concat( result, field.Name, " = ", fieldValue, ", " );
+				result = string.Concat( result, field.Name, " = ", fieldValue, ", " );
+			}
 		}
 
 		return result;
@@ -288,11 +302,15 @@ public static class Program
 
 			foreach ( var field in fields )
 			{
-				var fieldValue = typeof( RecordData )
+				// Descartamos los 2 campos adicionales, definidos por "Reflection"
+				if ( !field.IsInitOnly )
+				{
+					var fieldValue = typeof( RecordData )
 					.GetField( field.Name )!
 					.GetValue( record )!;
 
-				Console.WriteLine( $"Value of '{field.Name}' =>  {fieldValue}" );
+					Console.WriteLine( $"Value of '{field.Name}' =>  {fieldValue}" );
+				}
 			}
 
 			Console.WriteLine();

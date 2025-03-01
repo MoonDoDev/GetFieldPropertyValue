@@ -28,13 +28,13 @@ El resultado de dicha evaluación se muestra a continuación (saca tus propias con
 |-----------------------------------------------------------------------------------------|
 | Method                                    | Mean     | Error     | StdDev    | Median   |
 |------------------------------------------ |---------:|----------:|----------:|---------:|
-| GetFieldsByOnlyReflection                 | 1.901 us | 0.0279 us | 0.0248 us | 1.905 us |
-| GetPropsByOnlyReflection                  | 1.172 us | 0.0071 us | 0.0059 us | 1.172 us |
+| GetFieldsByOnlyReflection                 | 1.442 us | 0.0182 us | 0.0170 us | 1.444 us |
+| GetPropsByOnlyReflection                  | 1.175 us | 0.0156 us | 0.0138 us | 1.173 us |
 |------------------------------------------ |---------:|----------:|----------:|---------:|
-| GetFieldsByGenericAndReflection           | 6.557 us | 0.2278 us | 0.6645 us | 6.545 us |
-| GetPropsByGenericAndReflection            | 4.619 us | 0.2444 us | 0.7205 us | 4.536 us |
-| GetFieldsByGenericReflectionAndDictionary | 4.711 us | 0.2533 us | 0.7429 us | 4.634 us |
-| GetPropsByGenericReflectionAndDictionary  | 4.263 us | 0.2375 us | 0.6891 us | 4.045 us |
+| GetFieldsByGenericAndReflection           | 4.366 us | 0.0561 us | 0.0525 us | 4.371 us |
+| GetPropsByGenericAndReflection            | 4.701 us | 0.2165 us | 0.6314 us | 4.537 us |
+| GetFieldsByGenericReflectionAndDictionary | 4.587 us | 0.2291 us | 0.6684 us | 4.319 us |
+| GetPropsByGenericReflectionAndDictionary  | 4.206 us | 0.1623 us | 0.4579 us | 4.187 us |
 |-----------------------------------------------------------------------------------------|
 | * Legends *                                                                             |
 | Mean   : Arithmetic mean of all measurements                                            |
@@ -49,7 +49,7 @@ El resultado de dicha evaluación se muestra a continuación (saca tus propias con
 > Las métricas aqui expuestas pueden variar, dependiendo de las características del equipo donde se ejecute el test.
 
 ## Conclusiones
-Podemos concluir que para nuestro ejemplo y propósito nos funciona mucho mejor si usamos 100% `Reflection`, y adicionalmente podemos ver una gran diferencia entre la lectura de los valores de los campos y las propiedades en una clase.
+Podemos concluir que para nuestro ejemplo y propósito, nos funciona mucho mejor si usamos 100% `Reflection`, y adicionalmente podemos ver cierta diferencia entre la lectura de los valores de los campos y las propiedades, que para nuestro caso son 5 y 5.
 
 ## Dependencias
 ```
